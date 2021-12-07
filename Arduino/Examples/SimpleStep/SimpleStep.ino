@@ -7,14 +7,12 @@
 #define dir_2 7
 
 void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-  
   pinMode(enable_2, OUTPUT);
   pinMode(step_2, OUTPUT);
   pinMode(dir_2, OUTPUT);
 
   digitalWrite(enable_2, LOW);
-  digitalWrite(dir_2, HIGH);
+  digitalWrite(dir_2, LOW);
 }
 
 void loop() {
