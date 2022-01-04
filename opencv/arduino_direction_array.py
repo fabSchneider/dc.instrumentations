@@ -31,7 +31,7 @@ while True:
     ret,frame=capture.read()
 
     # creating filter for mask 
-    low_b = np.uint8([30,30,30])
+    low_b = np.uint8([150,80,230])
     high_b = np.uint8([0,0,0])
 
     # creating Mask 
@@ -53,10 +53,10 @@ while True:
             cy=int(middle["m01"]/middle["m00"])
 
             #print middlepoint + directions in console 
-           # print("CenterX: "+ str(cx)+" CenterY: "+ str(cy))
+            #print("CenterX: "+ str(cx)+" CenterY: "+ str(cy))
             
             #aktuellen wert ins array schreiben und mit dem unteren vergleichen
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 
             posArray = np.append(posArray, [[cx,cy]], axis=0)
@@ -142,7 +142,7 @@ while True:
 
 
     #show camera
-    cv2.imshow("Camerafeed", line)
+    cv2.imshow("Camerafeed", frame)
     cv2.imshow("Mask", mask)
 
 
