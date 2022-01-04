@@ -1,40 +1,38 @@
 #include <AccelStepper.h>
 
-#define enable_1 2
-#define step_1 3
-#define dir_1 4
+const uint8_t M1_EN = 2;
+const uint8_t M1_STEP = 3;
+const uint8_t M1_DIR = 4;
 
-#define enable_2 5
-#define step_2 6
-#define dir_2 7
+const uint8_t M2_EN = 5;
+const uint8_t M2_STEP = 6;
+const uint8_t M2_DIR = 7;
 
 //horizontal distance between motors [mm]
-float motorDist = 2000;
+const float MOTOR_DIST = 2000;
+const float MOTOR_DIST_SQ = MOTOR_DIST * MOTOR_DIST;
+
 //length of the cable at position 0 [mm]
-float homeLength = 1500;
-//length difference per motor step [mm/step]
-float lengthPerStep = 0.0196f;
+const float HOME_LEN = 1500;
+//cable length difference per motor step [mm/step]
+const float LEN_PER_STEP = 0.0196f;
 
 //the motors maximum speed
-int maxSpeed = 1600;
+int maxSpeed = 3200;
 
 float curr_x, curr_y;
-float r1, r2;
+float curr_r1, curr_r2;
 
-//motor speeds
+//motor speed delta
 float d1 = 0.0f;
 float d2 = 0.0f;
 
-float dFactor = 0.8f;
-
-float mag = 0.0;
-
-AccelStepper m1 = AccelStepper(AccelStepper::DRIVER , step_1, dir_1);
-AccelStepper m2 = AccelStepper(AccelStepper::DRIVER , step_2, dir_2);
+AccelStepper m1 = AccelStepper(AccelStepper::DRIVER, M1_STEP, M1_DIR);
+AccelStepper m2 = AccelStepper(AccelStepper::DRIVER, M2_STEP, M2_DIR);
 
 const byte numChars = 32;
 // an array to store the received data
-char receivedChars[numChars]; 
+char receivedChars[numChars];
 String data;
 const char endMarker = '\n';
 const char *delimiter = " ";
@@ -45,16 +43,16 @@ float cmd_x, cmd_y;
 
 void setup()
 {
-  pinMode(enable_1, OUTPUT);
-  pinMode(step_1, OUTPUT);
-  pinMode(dir_1, OUTPUT);
+  pinMode(M1_EN, OUTPUT);
+  pinMode(M1_STEP, OUTPUT);
+  pinMode(M1_DIR, OUTPUT);
 
-  pinMode(enable_2, OUTPUT);
-  pinMode(step_2, OUTPUT);
-  pinMode(dir_2, OUTPUT);
+  pinMode(M2_EN, OUTPUT);
+  pinMode(M2_STEP, OUTPUT);
+  pinMode(M2_DIR, OUTPUT);
 
-  digitalWrite(enable_1, LOW);
-  digitalWrite(enable_2, LOW);
+  digitalWrite(M1_EN, LOW);
+  digitalWrite(M2_EN, LOW);
 
   Serial.begin(115200);
   Serial.println("<Arduino is ready>");
@@ -66,89 +64,118 @@ void setup()
 
 void loop()
 {
-  receiveData();
-
-  if (newData) {
+  if (receiveData())
+  {
     processData();
     calculateCartesian();
     calculateSpeeds();
-    m1.setSpeed(d1 * maxSpeed);
-    m2.setSpeed(d2 * maxSpeed);
-    newData = false;
-
-    Serial.println("r1 " + String(r1) + " r2 " + String(r2) 
-    + " | x" + String(curr_x) + " y" + String(curr_y) 
-    + " | d1 " + String(d1) + " d2 " + String(d2)
-    + " | mag: " + String(mag));
+    updateSpeeds();
+    dump();
   }
 
   m1.runSpeed();
   m2.runSpeed();
 }
 
-//calculates the current position of the pen 
+//calculates the current position of the pen
 //in cartesian coordinates with motor 1 at position x0 y0
-void calculateCartesian(){
-
-
-  float s1 = m1.currentPosition();
+void calculateCartesian()
+{
+  float p1 = m1.currentPosition();
   //negate due to reversed winding direction
-  float s2 = -m2.currentPosition();
+  float p2 = -m2.currentPosition();
 
-  r1 = homeLength + s1 * lengthPerStep;
-  r2 = homeLength + s2 * lengthPerStep;
+  //convert to radii
+  curr_r1 = p1 * LEN_PER_STEP + HOME_LEN;
+  curr_r2 = p2 * LEN_PER_STEP + HOME_LEN;
 
-  curr_x = ((r1 * r1) - (r2 * r2) + (motorDist * motorDist)) / (2.0f * motorDist);
-  curr_y = sqrtf(r1 * r1 - curr_x * curr_x);
+  //calculate x and y as the intersection point of the two circles with r1 and r2
+  curr_x = (curr_r1 * curr_r1 - curr_r2 * curr_r2 + MOTOR_DIST_SQ) / (2.0f * MOTOR_DIST);
+  curr_y = sqrtf(curr_r1 * curr_r1 - curr_x * curr_x);
 }
 
-void calculateSpeeds(){
-  float new_r1 = sqrtf(powf(curr_x + cmd_x, 2) + powf(curr_y + cmd_y, 2));
-  float new_r2 = sqrtf(powf(curr_x - motorDist + cmd_x, 2) + powf(curr_y + cmd_y, 2));
+void calculateSpeeds()
+{
 
-  d1 = new_r1 - r1;
-  d2 = r2 - new_r2;
+  float target_x = curr_x + cmd_x;
+  float target_y = curr_y + cmd_y;
 
-  d1 *= dFactor;
-  d2 *= dFactor;
+  //calculate the target radius for m1 and m2
+  float target_r1 = length(target_x, target_y);
+  float target_r2 = length(target_x - MOTOR_DIST, target_y);
 
-  mag = sqrtf(d1 * d1 + d2 * d2);
-  if(mag > 0.001f){
-    d1 = d1 / mag * min(mag, 1.0f);
-    d2 = d2 / mag * min(mag, 1.0f);
+  //calculate the difference between the current and target radius
+  float r1_d = target_r1 - curr_r1;
+  float r2_d = curr_r2 - target_r2;
+
+  clampToUnit(r1_d, r2_d);
+  d1 = r1_d;
+  d2 = r2_d;
+}
+
+//updates the motor speeds
+void updateSpeeds()
+{
+  m1.setSpeed(d1 * maxSpeed);
+  m2.setSpeed(d2 * maxSpeed);
+}
+
+//returns the length of a 2d vector
+float length(float x, float y)
+{
+  return sqrtf(x * x + y * y);
+}
+
+//Makes sure that a 2d vector is contained within the unit circle
+void clampToUnit(float &x, float &y){
+  float mag = length(x, y);
+  if (mag > 0.001f)
+  {
+    x = x / mag * min(mag, 1.0f);
+    y = y / mag * min(mag, 1.0f);
   }
-  else{
-    d1 = 0.0f;
-    d2 = 0.0f;
+  else
+  {
+    x = 0.0f;
+    y = 0.0f;
   }
 }
 
-void receiveData() {
-
-  if (Serial.available() > 0 && newData == false) {
+//stores incoming data in receivedChars array
+//returns true if new data is available
+bool receiveData()
+{
+  if (Serial.available() > 0 && newData == false)
+  {
     char rc = Serial.read();
 
-    if (rc != endMarker) {
+    if (rc != endMarker)
+    {
       receivedChars[ndx] = rc;
       ndx++;
-      if (ndx >= numChars) {
+      if (ndx >= numChars)
+      {
         ndx = numChars - 1;
       }
     }
-    else {
+    else
+    {
       // terminate the string
-      receivedChars[ndx] = '\0'; 
+      receivedChars[ndx] = '\0';
       ndx = 0;
-      newData = true;
+      return true;
     }
   }
+  return false;
 }
 
-bool processData() {
+bool processData()
+{
   data = strtok(receivedChars, delimiter);
 
   //read x
-  if (data == NULL) {
+  if (data == NULL)
+  {
     return false;
   }
 
@@ -156,7 +183,8 @@ bool processData() {
 
   //read y
   data = strtok(NULL, delimiter);
-  if (data == NULL) {
+  if (data == NULL)
+  {
     return false;
   }
 
@@ -165,4 +193,10 @@ bool processData() {
   cmd_x = tx;
   cmd_y = ty;
   return true;
+}
+
+//prints the current state to the serial
+void dump()
+{
+  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + " | x" + String(curr_x) + " y" + String(curr_y) + " | d1 " + String(d1) + " d2 " + String(d2));
 }
