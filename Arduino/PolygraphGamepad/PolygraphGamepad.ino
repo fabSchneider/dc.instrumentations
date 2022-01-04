@@ -17,6 +17,11 @@ const float HOME_LEN = 1500;
 //cable length difference per motor step [mm/step]
 const float LEN_PER_STEP = 0.0196f;
 
+const int LIMIT_MIN_X = 400;
+const int LIMIT_MAX_X = 1600;
+const int LIMIT_MIN_Y = 400;
+const int LIMIT_MAX_Y = 1600;
+
 //the motors maximum speed
 int maxSpeed = 3200;
 
@@ -72,6 +77,12 @@ void loop()
     updateSpeeds();
     dump();
   }
+  else
+  {
+    calculateCartesian();
+    calculateSpeeds();
+    updateSpeeds();
+  }
 
   m1.runSpeed();
   m2.runSpeed();
@@ -83,7 +94,7 @@ void calculateCartesian()
 {
   float p1 = m1.currentPosition();
   //negate due to reversed winding direction
-  float p2 = -m2.currentPosition();
+  float p2 = m2.currentPosition();
 
   //convert to radii
   curr_r1 = p1 * LEN_PER_STEP + HOME_LEN;
@@ -96,9 +107,12 @@ void calculateCartesian()
 
 void calculateSpeeds()
 {
-
   float target_x = curr_x + cmd_x;
   float target_y = curr_y + cmd_y;
+
+  //keep target within limits
+  target_x = clamp(LIMIT_MIN_X, LIMIT_MAX_X, target_x);
+  target_y = clamp(LIMIT_MIN_Y, LIMIT_MAX_Y, target_y);
 
   //calculate the target radius for m1 and m2
   float target_r1 = length(target_x, target_y);
@@ -126,8 +140,15 @@ float length(float x, float y)
   return sqrtf(x * x + y * y);
 }
 
+//clamps a value in between a minimum and a maximum
+float clamp(float _min, float _max, float value)
+{
+  return max(_min, min(_max, value));
+}
+
 //Makes sure that a 2d vector is contained within the unit circle
-void clampToUnit(float &x, float &y){
+void clampToUnit(float &x, float &y)
+{
   float mag = length(x, y);
   if (mag > 0.001f)
   {
