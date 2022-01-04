@@ -10,16 +10,12 @@ baudrate = 115200
 # the frequency at which the gamepad is polled for input (in seconds)
 gamepad_polling_freq = 0.03
 
-# Send command to arduino
-def send(arduino, x , y):
+# Sends xy command to arduino
+def send_xy(arduino, x , y):
     sendStr = "{0} {1}\n".format(x, y)
     arduino.write(bytes(sendStr, 'utf-8'))
     print("[SEND] " + sendStr, end= '')
     print("[ARDUINO] " + arduino.readline().decode("utf-8"))
-
-# sends a stop command to the arduino
-def stop(arduino):
-    arduino.write(bytes("0 0", 'utf-8'))
 
 # clamps a vector to be within the unit circle
 def clamp_to_unit(x, y):
@@ -31,18 +27,20 @@ def clamp_to_unit(x, y):
     
     return x, y
 
-def send_loop(gamepad, arduino):
-
+# starts sending data to arduino
+def run_send(gamepad, arduino):
+    print("Starting to send data from the gamepad to arduino on port {0} (baudrate: {1})".format(port, baudrate))
     last_x = math.nan
     last_y = math.nan
+    # start the send loop
+    while True:
+        if(not gamepad.is_running()):
+            send_xy(arduino, 0, 0)
+            return "disconnect"
+        if gamepad.X == 1:
+            send_xy(arduino, 0, 0)
+            return "stopped"
 
-    while gamepad.is_running():
-                        
-        if(gamepad.X == 1):
-            # send stop data to arduino before stopping
-            stop(arduino)
-            return
-        
         x = gamepad.RightJoystickX
         # invert y to match direction the pen is moving more closely
         y = gamepad.RightJoystickY
@@ -52,7 +50,7 @@ def send_loop(gamepad, arduino):
         if x != last_x or y != last_y :
             last_x = x
             last_y = y
-            send(arduino, x, y)
+            send_xy(arduino, x, y)
 
         time.sleep(gamepad_polling_freq)
 
@@ -60,17 +58,16 @@ if __name__ == '__main__':
 
     # create the gamepad listener
     gpad = gamepad.Gamepad()
-    with serial.Serial(port, baudrate) as arduino :
-        # wait for first response from arduino
-        arduino.readline()
-        if gpad.is_running():
-            print("Starting to send data from the gamepad to arduino on port {0} (baudrate: {1})".format(port, baudrate))
-            # start the send loop
-            send_loop(gpad, arduino)         
-            print("Sending stopped")
-        print("Quitting...")  
+    arduino = serial.Serial(port, baudrate)
+    res = run_send(gpad, arduino)   
 
+    if res == "disconnected":
+        print("Gamepad disconnected")
+    if res == "stopped":
+        print("Sending stopped")
 
+    arduino.close()    
+    print("Quitting...")  
    
 
 
