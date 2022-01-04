@@ -14,7 +14,8 @@ gamepad_polling_freq = 0.03
 def send(arduino, x , y):
     sendStr = "{0} {1}\n".format(x, y)
     arduino.write(bytes(sendStr, 'utf-8'))
-    print(arduino.readline().decode("utf-8"))
+    print("[SEND] " + sendStr, end= '')
+    print("[ARDUINO] " + arduino.readline().decode("utf-8"))
 
 # sends a stop command to the arduino
 def stop(arduino):
@@ -35,8 +36,6 @@ def send_loop(gamepad, arduino):
     last_x = math.nan
     last_y = math.nan
 
-    send(arduino, 0, 0)
-
     while gamepad.is_running():
                         
         if(gamepad.X == 1):
@@ -45,6 +44,7 @@ def send_loop(gamepad, arduino):
             return
         
         x = gamepad.RightJoystickX
+        # invert y to match direction the pen is moving more closely
         y = gamepad.RightJoystickY
         
         x, y = clamp_to_unit(x, y)

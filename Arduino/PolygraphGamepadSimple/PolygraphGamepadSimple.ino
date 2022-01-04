@@ -12,15 +12,8 @@
 #define step_2 6
 #define dir_2 7
 
-//horizontal distance between motors [mm]
-int motorDist = 1200;
-//length of the cable at position 0 [mm]
-int homeLength = 1000;
-//length difference per motor step [mm/step]
-float lengthPerStep = 0.0196f;
-
 //the motors maximum speed
-int maxSpeed = 1000;
+int maxSpeed = 4800;
 
 AccelStepper m1 = AccelStepper(AccelStepper::DRIVER , step_1, dir_1);
 AccelStepper m2 = AccelStepper(AccelStepper::DRIVER , step_2, dir_2);

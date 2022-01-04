@@ -9,21 +9,25 @@
 #define dir_2 7
 
 //horizontal distance between motors [mm]
-int motorDist = 1200;
+float motorDist = 2000;
 //length of the cable at position 0 [mm]
-int homeLength = 1000;
+float homeLength = 1500;
 //length difference per motor step [mm/step]
 float lengthPerStep = 0.0196f;
 
 //the motors maximum speed
-int maxSpeed = 1000;
+int maxSpeed = 1600;
 
 float curr_x, curr_y;
 float r1, r2;
 
 //motor speeds
-float d1 = 0;
-float d2 = 0;
+float d1 = 0.0f;
+float d2 = 0.0f;
+
+float dFactor = 0.8f;
+
+float mag = 0.0;
 
 AccelStepper m1 = AccelStepper(AccelStepper::DRIVER , step_1, dir_1);
 AccelStepper m2 = AccelStepper(AccelStepper::DRIVER , step_2, dir_2);
@@ -66,22 +70,26 @@ void loop()
 
   if (newData) {
     processData();
+    calculateCartesian();
+    calculateSpeeds();
+    m1.setSpeed(d1 * maxSpeed);
+    m2.setSpeed(d2 * maxSpeed);
     newData = false;
+
+    Serial.println("r1 " + String(r1) + " r2 " + String(r2) 
+    + " | x" + String(curr_x) + " y" + String(curr_y) 
+    + " | d1 " + String(d1) + " d2 " + String(d2)
+    + " | mag: " + String(mag));
   }
-
-  calculateCartesian();
-  calculateSpeeds();
-
-  m1.setSpeed(d1 * maxSpeed);
-  m2.setSpeed(d2 * maxSpeed);
 
   m1.runSpeed();
   m2.runSpeed();
 }
 
 //calculates the current position of the pen 
-//in cartesion coordinates with motor 1 at position x0 y0
+//in cartesian coordinates with motor 1 at position x0 y0
 void calculateCartesian(){
+
 
   float s1 = m1.currentPosition();
   //negate due to reversed winding direction
@@ -90,20 +98,29 @@ void calculateCartesian(){
   r1 = homeLength + s1 * lengthPerStep;
   r2 = homeLength + s2 * lengthPerStep;
 
-  curr_x = (r1 * r1 - r2 * r2 + motorDist * motorDist) / (2.0f * motorDist);
+  curr_x = ((r1 * r1) - (r2 * r2) + (motorDist * motorDist)) / (2.0f * motorDist);
   curr_y = sqrtf(r1 * r1 - curr_x * curr_x);
-
-  Serial.println("r1 " + String(r1) + " r2 " + String(r2) + "  x" + String(curr_x) + " y" + String(curr_y));
 }
 
 void calculateSpeeds(){
   float new_r1 = sqrtf(powf(curr_x + cmd_x, 2) + powf(curr_y + cmd_y, 2));
   float new_r2 = sqrtf(powf(curr_x - motorDist + cmd_x, 2) + powf(curr_y + cmd_y, 2));
 
-  d1 = (r1 - new_r1);
-  d2 = -(r2 - new_r2);
+  d1 = new_r1 - r1;
+  d2 = r2 - new_r2;
 
-  Serial.println("d1 " + String(d1) + " d2 " + String(d2));
+  d1 *= dFactor;
+  d2 *= dFactor;
+
+  mag = sqrtf(d1 * d1 + d2 * d2);
+  if(mag > 0.001f){
+    d1 = d1 / mag * min(mag, 1.0f);
+    d2 = d2 / mag * min(mag, 1.0f);
+  }
+  else{
+    d1 = 0.0f;
+    d2 = 0.0f;
+  }
 }
 
 void receiveData() {
