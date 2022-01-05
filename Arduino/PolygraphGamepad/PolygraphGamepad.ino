@@ -22,10 +22,23 @@ const int LIMIT_MAX_X = 1600;
 const int LIMIT_MIN_Y = 400;
 const int LIMIT_MAX_Y = 1600;
 
+float home_x;
+float home_y;
+
 //the motors maximum speed
 int maxSpeed = 3200;
 
-float curr_x, curr_y;
+//machine x, y position
+float m_x, m_y;
+
+float getWorkX(){
+  return m_x - home_x;
+}
+
+float getWorkY(){
+  return m_y - home_y;
+}
+
 float curr_r1, curr_r2;
 
 //motor speed delta
@@ -46,6 +59,7 @@ static byte ndx = 0;
 
 float cmd_x, cmd_y;
 
+
 void setup()
 {
   pinMode(M1_EN, OUTPUT);
@@ -65,6 +79,9 @@ void setup()
   // Set the maximum speed in steps per second
   m1.setMaxSpeed(maxSpeed);
   m2.setMaxSpeed(maxSpeed);
+
+  //Calclate home pos
+  calculateIntersection(HOME_LEN, HOME_LEN, home_x, home_y);
 }
 
 void loop()
@@ -94,25 +111,33 @@ void calculateCartesian()
 {
   float p1 = m1.currentPosition();
   //negate due to reversed winding direction
-  float p2 = m2.currentPosition();
+  float p2 = -m2.currentPosition();
 
   //convert to radii
   curr_r1 = p1 * LEN_PER_STEP + HOME_LEN;
   curr_r2 = p2 * LEN_PER_STEP + HOME_LEN;
 
   //calculate x and y as the intersection point of the two circles with r1 and r2
-  curr_x = (curr_r1 * curr_r1 - curr_r2 * curr_r2 + MOTOR_DIST_SQ) / (2.0f * MOTOR_DIST);
-  curr_y = sqrtf(curr_r1 * curr_r1 - curr_x * curr_x);
+  float x, y;
+  calculateIntersection(curr_r1, curr_r2, x, y);
+  m_x = x;
+  m_y = y;
+}
+
+//calculate x and y as the intersection point of the two circles with r1 and r2
+void calculateIntersection(const float r1, const float r2, float& x, float& y){
+  x = (r1 * r1 - r2 * r2 + MOTOR_DIST_SQ) / (2.0f * MOTOR_DIST);
+  y = sqrtf(r1 * r1 - x * x);
 }
 
 void calculateSpeeds()
 {
-  float target_x = curr_x + cmd_x;
-  float target_y = curr_y + cmd_y;
+  float target_x = m_x + cmd_x;
+  float target_y = m_y + cmd_y;
 
   //keep target within limits
-  target_x = clamp(LIMIT_MIN_X, LIMIT_MAX_X, target_x);
-  target_y = clamp(LIMIT_MIN_Y, LIMIT_MAX_Y, target_y);
+  //target_x = clamp(LIMIT_MIN_X, LIMIT_MAX_X, target_x);
+  //target_y = clamp(LIMIT_MIN_Y, LIMIT_MAX_Y, target_y);
 
   //calculate the target radius for m1 and m2
   float target_r1 = length(target_x, target_y);
@@ -219,5 +244,5 @@ bool processData()
 //prints the current state to the serial
 void dump()
 {
-  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + " | x" + String(curr_x) + " y" + String(curr_y) + " | d1 " + String(d1) + " d2 " + String(d2));
+  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + " | x" + String(getWorkX()) + " y" + String(getWorkY()) + " | d1 " + String(d1) + " d2 " + String(d2));
 }
