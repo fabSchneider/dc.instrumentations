@@ -15,12 +15,12 @@ const float MOTOR_DIST_SQ = MOTOR_DIST * MOTOR_DIST;
 //length of the cable at position 0 [mm]
 const float HOME_LEN = 1500;
 //cable length difference per motor step [mm/step]
-const float LEN_PER_STEP = 0.0196f;
+const float LEN_PER_STEP = 0.035f;
 
-const int LIMIT_MIN_X = 400;
-const int LIMIT_MAX_X = 1600;
-const int LIMIT_MIN_Y = 400;
-const int LIMIT_MAX_Y = 1600;
+const int LIMIT_MIN_X = -600;
+const int LIMIT_MAX_X = 600;
+const int LIMIT_MIN_Y = -600;
+const int LIMIT_MAX_Y = 800;
 
 float home_x;
 float home_y;
@@ -31,12 +31,24 @@ int maxSpeed = 3200;
 //machine x, y position
 float m_x, m_y;
 
-float getWorkX(){
-  return m_x - home_x;
+//converts machine x to work x
+float toWorkX(float x){
+  return x - home_x;
 }
 
-float getWorkY(){
-  return m_y - home_y;
+//converts machine y to work y
+float toWorkY(float y){
+  return y - home_y;
+}
+
+//converts work x to machine x
+float toMachineX(float x){
+  return x + home_x;
+}
+
+//converts work y to machine y
+float toMachineY(float y){
+  return y + home_y;
 }
 
 float curr_r1, curr_r2;
@@ -45,6 +57,7 @@ float curr_r1, curr_r2;
 float d1 = 0.0f;
 float d2 = 0.0f;
 
+//looking front onto the polargraph, m1 is left and m2 is right
 AccelStepper m1 = AccelStepper(AccelStepper::DRIVER, M1_STEP, M1_DIR);
 AccelStepper m2 = AccelStepper(AccelStepper::DRIVER, M2_STEP, M2_DIR);
 
@@ -127,7 +140,7 @@ void calculateCartesian()
 //calculate x and y as the intersection point of the two circles with r1 and r2
 void calculateIntersection(const float r1, const float r2, float& x, float& y){
   x = (r1 * r1 - r2 * r2 + MOTOR_DIST_SQ) / (2.0f * MOTOR_DIST);
-  y = sqrtf(r1 * r1 - x * x);
+  y = -sqrtf(r1 * r1 - x * x);
 }
 
 void calculateSpeeds()
@@ -136,8 +149,8 @@ void calculateSpeeds()
   float target_y = m_y + cmd_y;
 
   //keep target within limits
-  //target_x = clamp(LIMIT_MIN_X, LIMIT_MAX_X, target_x);
-  //target_y = clamp(LIMIT_MIN_Y, LIMIT_MAX_Y, target_y);
+  target_x = toMachineX(clamp(LIMIT_MIN_X, LIMIT_MAX_X, toWorkX(target_x)));
+  target_y = toMachineY(clamp(LIMIT_MIN_Y, LIMIT_MAX_Y, toWorkY(target_y)));
 
   //calculate the target radius for m1 and m2
   float target_r1 = length(target_x, target_y);
@@ -244,5 +257,5 @@ bool processData()
 //prints the current state to the serial
 void dump()
 {
-  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + " | x" + String(getWorkX()) + " y" + String(getWorkY()) + " | d1 " + String(d1) + " d2 " + String(d2));
+  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + " | x" + String(toWorkX(m_x)) + " y" + String(toWorkY(m_y)) + " | d1 " + String(d1) + " d2 " + String(d2));
 }
