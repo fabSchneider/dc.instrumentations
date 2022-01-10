@@ -16,7 +16,7 @@ def send_xy(arduino, x , y):
     sendStr = "{0} {1}\n".format(x, y)
     arduino.write(bytes(sendStr, 'utf-8'))
     print("[SEND] " + sendStr, end= '')
-    print("[ARDUINO] " + arduino.readline().decode("utf-8"))
+    print("[ARDUINO] " + arduino.readline().decode("utf-8").replace('\n', ''))
 
 # clamps a vector to be within the unit circle
 def clamp_to_unit(x, y):
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     gpad = gamepad.Gamepad()
 
     try:
-        arduino = serial.Serial(port, baudrate)
+        arduino = serial.Serial(port, baudrate, timeout = 0.003)
         res = run_send(gpad, arduino)   
 
         if res == "disconnected":
