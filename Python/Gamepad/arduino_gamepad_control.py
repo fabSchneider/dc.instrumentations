@@ -1,3 +1,4 @@
+from serial.serialutil import SerialException
 import gamepad
 import math
 import time
@@ -58,16 +59,19 @@ if __name__ == '__main__':
 
     # create the gamepad listener
     gpad = gamepad.Gamepad()
-    arduino = serial.Serial(port, baudrate)
-    res = run_send(gpad, arduino)   
 
-    if res == "disconnected":
-        print("Gamepad disconnected")
-    if res == "stopped":
-        print("Sending stopped")
+    try:
+        arduino = serial.Serial(port, baudrate)
+        res = run_send(gpad, arduino)   
 
-    arduino.close()    
-    print("Quitting...")  
+        if res == "disconnected":
+            print("gamepad disconnected")
+        if res == "stopped":
+            print("sending stopped")
+
+        arduino.close()    
+    except SerialException as e:
+        print (e)       
    
 
 
