@@ -39,13 +39,13 @@ class GampadControl:
         self._thread.daemon = True
         self._running = True
         self._thread .start()
+        print("Starting to send data from the gamepad to arduino on port {0} (baudrate: {1})".format(port, baudrate))
 
     def stop(self):
         self._running = False
         self._thread.join()
   
     def _run(self):
-        print("Starting to send data from the gamepad to arduino on port {0} (baudrate: {1})".format(port, baudrate))
         last_x = math.nan
         last_y = math.nan
         # start the send loop
@@ -53,12 +53,8 @@ class GampadControl:
             if(not self._gpad.is_running()):
                 plotter.send_xy(self._arduino, 0, 0)
                 return "disconnect"
-            # if gpad.X == 1:
-            #     plotter.send_xy(arduino, 0, 0)
-            #     return "stopped"
 
             x = self._gpad.RightJoystickX
-            # invert y to match direction the pen is moving more closely
             y = self._gpad.RightJoystickY
             
             x, y = util.clamp_to_unit(x, y)
@@ -69,7 +65,6 @@ class GampadControl:
                 plotter.send_xy(self._arduino, x, y)
 
             time.sleep(self._freq)
-        print("Stop thread")
 
 if __name__ == '__main__':
 
