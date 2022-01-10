@@ -1,5 +1,7 @@
 #include <AccelStepper.h>
 
+#define SEND_RESPONSE
+
 const uint8_t M1_EN = 2;
 const uint8_t M1_STEP = 3;
 const uint8_t M1_DIR = 4;
@@ -105,7 +107,9 @@ void loop()
     calculateCartesian();
     calculateSpeeds();
     updateSpeeds();
+    #ifdef SEND_RESPONSE
     dump();
+    #endif
   }
   else
   {
