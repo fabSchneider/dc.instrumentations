@@ -46,17 +46,20 @@ def cam_processing(capture):
         if middle["m00"] !=0:
             x=int(middle["m10"]/middle["m00"])
             y=int(middle["m01"]/middle["m00"])
+             #calculate difference between old x and y to new x and y 
+            xdif= x-old_x
+            ydif= y-old_y
     
-    #calculate difference between old x and y to new x and y 
-    xdif= x-old_x
-    ydif= y-old_y
-    
-    # new the x and y to be the old x and y 
-    old_x = x
-    old_y = y
-    print(xdif, ydif)
+            # new the x and y to be the old x and y 
+            old_x = x
+            old_y = y
+            print(xdif, ydif)
+            return xdif, ydif #, frame, maxcontour, mask 
 
-    return xdif, ydif #, frame, maxcontour, mask 
+    return 0,0
+
+    
+   
 
 
 
