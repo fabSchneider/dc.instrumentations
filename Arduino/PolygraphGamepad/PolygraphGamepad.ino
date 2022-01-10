@@ -257,5 +257,7 @@ bool processData()
 //prints the current state to the serial
 void dump()
 {
-  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + " | x" + String(toWorkX(m_x)) + " y" + String(toWorkY(m_y)) + " | d1 " + String(d1) + " d2 " + String(d2));
+  Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + 
+  " | x" + String(toWorkX(m_x)) + " y" + String(toWorkY(m_y)) + 
+  " | d1 " + String(d1) + " d2 " + String(d2));
 }
