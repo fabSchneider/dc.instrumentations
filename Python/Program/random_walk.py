@@ -25,7 +25,7 @@ def do_random_walk(seed, arduino):
     random.seed(seed)
     # start the send loop
     while not keyboard.is_pressed('esc'):
-        send_random()    
+        send_random(arduino)    
         time.sleep(freq)
 
     # send stop
