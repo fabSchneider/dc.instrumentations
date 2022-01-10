@@ -16,10 +16,10 @@ port = 'COM5'
 baudrate = 115200
 
 # the frequency at which new directions are generated
-freq = 1.5
+freq = 0.8
 
 # starts sending data to arduino
-def do_random_walk(seed, arduino):
+def do_random_walk(arduino, seed, freq):
     print("Starting to send data to arduino on port {0} (baudrate: {1})".format(port, baudrate))
 
     random.seed(seed)
@@ -41,10 +41,9 @@ def send_random(arduino):
 
 if __name__ == '__main__':
 
-
     try:
         arduino = serial.Serial(port, baudrate, timeout = 0.003)
-        do_random_walk(5323, arduino)   
+        do_random_walk(arduino, 5323, freq)   
         arduino.close()    
     except SerialException as e:
         print (e)       
