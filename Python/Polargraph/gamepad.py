@@ -10,9 +10,6 @@ class Gamepad(object):
     TRIG_DEADZONE = 0.2
 
     def __init__(self):
-
-
-
         self.LeftJoystickY = 0
         self.LeftJoystickX = 0
         self.RightJoystickY = 0

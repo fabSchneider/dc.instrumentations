@@ -1,6 +1,6 @@
 #include <AccelStepper.h>
 
-#define SEND_RESPONSE
+//#define SEND_RESPONSE
 
 const uint8_t M1_EN = 2;
 const uint8_t M1_STEP = 3;
