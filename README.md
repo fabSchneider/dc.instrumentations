@@ -8,7 +8,7 @@ Design & Computation - University of the Arts, Berlin
 
 ### Hardware
 1. fix motor 1 to the left and motor 2 to the right
-2. connect motors to fabscan shield sockets 1 and 2
+2. connect motors to fabscan shield sockets (left motor to 2 and and right motor to 1)
 3. measure 'MOTOR_DIST': horizontal distance between motors
 4. hang cables
 5. add weights to pen and both ends
@@ -23,4 +23,4 @@ Design & Computation - University of the Arts, Berlin
 2. Set 'MOTOR_DIST', 'HOME_LEN' and 'LEN_PER_STEP' in *Arduino/Polargraph*
 3. Set limits and maxSpeed
 4. Upload *Arduino/Polargraph* to arduino
-5. Start python script to control polargraph
+5. Start python script to control polargraph (start the scripts from the root python directory and not the subfolder the script is in)
