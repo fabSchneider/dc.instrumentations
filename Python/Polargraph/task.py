@@ -2,8 +2,8 @@ import threading
 
 class PolargraphTask:
 
-    def __init__(self, arduino, task):
-        self._arduino = arduino
+    def __init__(self, plotter, task):
+        self.plotter = plotter
         self._task = task
         self._running = False
 
