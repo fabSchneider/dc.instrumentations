@@ -33,6 +33,9 @@ int maxSpeed = 3200;
 //machine x, y position
 float m_x, m_y;
 
+bool movePosition = false;
+float reached_epsilon = 0.01f;
+
 //converts machine x to work x
 float toWorkX(float x){
   return x - home_x;
@@ -63,17 +66,15 @@ float d2 = 0.0f;
 AccelStepper m1 = AccelStepper(AccelStepper::DRIVER, M1_STEP, M1_DIR);
 AccelStepper m2 = AccelStepper(AccelStepper::DRIVER, M2_STEP, M2_DIR);
 
-const byte numChars = 32;
+const byte numChars = 64;
 // an array to store the received data
 char receivedChars[numChars];
 String data;
 const char endMarker = '\n';
 const char *delimiter = " ";
-boolean newData = false;
 static byte ndx = 0;
 
 float cmd_x, cmd_y;
-
 
 void setup()
 {
@@ -116,6 +117,7 @@ void loop()
     calculateCartesian();
     calculateSpeeds();
     updateSpeeds();
+    checkReachedPosition();
   }
 
   m1.runSpeed();
@@ -149,8 +151,21 @@ void calculateIntersection(const float r1, const float r2, float& x, float& y){
 
 void calculateSpeeds()
 {
-  float target_x = m_x + cmd_x;
-  float target_y = m_y + cmd_y;
+  float target_x;
+  float target_y;
+
+  //when movePosition flag is true
+  //treat the current cmd coordinates as the target
+  if(movePosition){
+    target_x = toMachineX(cmd_x);
+    target_y = toMachineY(cmd_y);
+  }
+  //otherwise add the cmd coordinates 
+  // to current machine position
+  else{
+    target_x = m_x + cmd_x;
+    target_y = m_y + cmd_y;
+  }
 
   //keep target within limits
   target_x = toMachineX(clamp(LIMIT_MIN_X, LIMIT_MAX_X, toWorkX(target_x)));
@@ -165,8 +180,20 @@ void calculateSpeeds()
   float r2_d = curr_r2 - target_r2;
 
   clampToUnit(r1_d, r2_d);
+
   d1 = r1_d;
   d2 = r2_d;
+}
+
+void checkReachedPosition(){
+  if(movePosition){
+    if(lengthSQ(d1, d2) < reached_epsilon){
+      movePosition = false;    
+      cmd_x = 0;
+      cmd_y = 0;
+      Serial.println('r');
+    }
+  }
 }
 
 //updates the motor speeds
@@ -180,6 +207,12 @@ void updateSpeeds()
 float length(float x, float y)
 {
   return sqrtf(x * x + y * y);
+}
+
+//returns the length of a 2d vector
+float lengthSQ(float x, float y)
+{
+  return x * x + y * y;
 }
 
 //clamps a value in between a minimum and a maximum
@@ -208,7 +241,7 @@ void clampToUnit(float &x, float &y)
 //returns true if new data is available
 bool receiveData()
 {
-  if (Serial.available() > 0 && newData == false)
+  if (Serial.available() > 0)
   {
     char rc = Serial.read();
 
@@ -236,7 +269,14 @@ bool processData()
 {
   data = strtok(receivedChars, delimiter);
 
+  if (data == NULL){
+     return false;
+  }
+
+  int tp = data.toInt();
+
   //read x
+  data = strtok(NULL, delimiter);
   if (data == NULL)
   {
     return false;
@@ -253,6 +293,7 @@ bool processData()
 
   float ty = data.toFloat();
 
+  movePosition = tp == 1;
   cmd_x = tx;
   cmd_y = ty;
   return true;
@@ -261,7 +302,15 @@ bool processData()
 //prints the current state to the serial
 void dump()
 {
+  String moveType;
+  if(movePosition){
+    moveType = "POS";
+  }else{
+    moveType = "DIR";
+  }
+
   Serial.println("r1 " + String(curr_r1) + " r2 " + String(curr_r2) + 
   " | x" + String(toWorkX(m_x)) + " y" + String(toWorkY(m_y)) + 
-  " | d1 " + String(d1) + " d2 " + String(d2));
+  " | d1 " + String(d1) + " d2 " + String(d2) +
+  " | Move: " + moveType);
 }
