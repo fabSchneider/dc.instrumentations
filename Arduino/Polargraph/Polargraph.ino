@@ -19,10 +19,10 @@ const float HOME_LEN = 1500;
 //cable length difference per motor step [mm/step]
 const float LEN_PER_STEP = 0.035f;
 
-const int LIMIT_MIN_X = -600;
-const int LIMIT_MAX_X = 600;
-const int LIMIT_MIN_Y = -600;
-const int LIMIT_MAX_Y = 800;
+const int LIMIT_MIN_X = -800;
+const int LIMIT_MAX_X = 800;
+const int LIMIT_MIN_Y = -800;
+const int LIMIT_MAX_Y = 1000;
 
 float home_x;
 float home_y;
