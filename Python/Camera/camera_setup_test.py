@@ -8,8 +8,6 @@ import time
 from tkinter import *
 
 #arduino verbindung
-import pyfirmata
-#arduino = pyfirmata.Arduino('COM3')
 
 #Videocapture initialisieren 
 capture = cv2.VideoCapture(1)
