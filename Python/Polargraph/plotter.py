@@ -3,10 +3,9 @@ import time
 
 from Polargraph.gamepad import Gamepad
 from Polargraph import task
-from Gamepad import gamepad_control
+from Polargraph import gamepad_control
 
 class Plotter:
-
     def __init__(self, arduino):
         self._arduino = arduino
 
@@ -60,6 +59,9 @@ class Plotter:
         self.gpad_b_pressed = gpad.B == 1
         self.gpad_a_pressed = gpad.A == 1
 
+
+    # run the plotter - by default it will be controlable by the gampad's right joystick
+    # the supplied array of programs can be maped to the gamepad buttons x, y, b and a (in that order)
     def run(self, programs):
         # create the gamepad listener
         gpad = Gamepad()
@@ -69,7 +71,7 @@ class Plotter:
         for program in programs:
             tasks.append(task.PolargraphTask(self, program))
 
-        tasks.append(gamepad_control.GampadControl(gpad, self))
+        tasks.append(task.PolargraphTask(self, gamepad_control.gamepad_control))
 
         gpad_task  = len(tasks) - 1
         currTask = gpad_task
