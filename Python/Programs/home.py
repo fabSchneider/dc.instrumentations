@@ -1,5 +1,3 @@
-import time
-
 def home(task):
     print("Start homing")
 
