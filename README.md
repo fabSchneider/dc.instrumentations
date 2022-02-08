@@ -18,9 +18,17 @@ Design & Computation - University of the Arts, Berlin
 2. connect arduino to laptop
 
 ### Scripts
+1. Install [AccelStepper](https://www.arduino.cc/reference/en/libraries/accelstepper/) library from the Arduino IDE
+2. Upload and run *Arduino/PolargraphCalibration* to measure 'LEN_PER_STEP': the change in cable length in mm per motor step
+3. Set 'MOTOR_DIST', 'HOME_LEN' and 'LEN_PER_STEP' in *Arduino/Polargraph*
+4. Set limits and maxSpeed
+5. Upload *Arduino/Polargraph* to arduino
+6. Start python script to control polargraph (start the scripts from the root python directory and not the subfolder the script is in)
 
-1. Upload and run *Arduino/PolargraphCalibration* to measure 'LEN_PER_STEP': the change in cable length in mm per motor step
-2. Set 'MOTOR_DIST', 'HOME_LEN' and 'LEN_PER_STEP' in *Arduino/Polargraph*
-3. Set limits and maxSpeed
-4. Upload *Arduino/Polargraph* to arduino
-5. Start python script to control polargraph (start the scripts from the root python directory and not the subfolder the script is in)
+
+    >On Linux run the script with root privileges 
+
+
+
+
+
