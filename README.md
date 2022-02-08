@@ -17,10 +17,17 @@ Design & Computation - University of the Arts, Berlin
 1. power to fabscan shield (12V)
 2. connect arduino to laptop
 
-### Scripts
+### Arduino Setup
+1. Install [AccelStepper](https://www.arduino.cc/reference/en/libraries/accelstepper/) library from the Arduino IDE
+2. Upload and run *Arduino/PolargraphCalibration* to measure 'LEN_PER_STEP': the change in cable length in mm per motor step
+3. Set 'MOTOR_DIST', 'HOME_LEN' and 'LEN_PER_STEP' in *Arduino/Polargraph*
+4. Set limits and maxSpeed
+5. Upload *Arduino/Polargraph* to arduino
+   
+## Python Setup
+1. Install python3 and pip
+2. Install python modules from the requirements by running `pip -r requirements.txt` inside the python folder 
+3. Start the python script to control the polargraph (start the scripts from the root python directory and not the subfolder the script is in)
 
-1. Upload and run *Arduino/PolargraphCalibration* to measure 'LEN_PER_STEP': the change in cable length in mm per motor step
-2. Set 'MOTOR_DIST', 'HOME_LEN' and 'LEN_PER_STEP' in *Arduino/Polargraph*
-3. Set limits and maxSpeed
-4. Upload *Arduino/Polargraph* to arduino
-5. Start python script to control polargraph (start the scripts from the root python directory and not the subfolder the script is in)
+
+
