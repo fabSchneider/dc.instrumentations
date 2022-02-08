@@ -6,13 +6,13 @@ import random
 def camera_feed(task):
     print("Starting camera feed")
 
-    capture = cv2.VideoCapture(1)
+    capture = cv2.VideoCapture(0)
     time.sleep(1)
 
     capture.set(cv2.CAP_PROP_SETTINGS, 0)
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-    capture.set(cv2.CAP_PROP_EXPOSURE, -7)
+    capture.set(cv2.CAP_PROP_EXPOSURE, 30)
 
     dir = random.uniform(-math.pi, math.pi)
 

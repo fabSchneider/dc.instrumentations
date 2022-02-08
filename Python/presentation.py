@@ -9,7 +9,8 @@ from Programs.random_pos import random_brush
 from Programs.camera_feed import camera_feed
 
 # arduino serial settings
-port = 'COM5'
+# port = 'COM5'
+port = '/dev/ttyACM0'
 baudrate = 115200
 
 if __name__ == '__main__':   
