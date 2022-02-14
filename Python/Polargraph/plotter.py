@@ -62,7 +62,7 @@ class Plotter:
 
     # run the plotter - by default it will be controlable by the gampad's right joystick
     # the supplied array of programs can be maped to the gamepad buttons x, y, b and a (in that order)
-    def run(self, programs):
+    def run(self, programs, run_time = float('inf')):
         # create the gamepad listener
         gpad = Gamepad()
 
@@ -77,7 +77,9 @@ class Plotter:
         currTask = gpad_task
         tasks[currTask].start()
 
-        while(not keyboard.is_pressed('esc')):
+        start_time = time.time()
+
+        while(not keyboard.is_pressed('esc') and time.time() - start_time < run_time):
             self.read_gpad(gpad)
 
             if len(tasks) > 1 and self.gpad_x_down:
