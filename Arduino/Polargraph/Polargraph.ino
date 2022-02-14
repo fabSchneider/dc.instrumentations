@@ -11,7 +11,7 @@ const uint8_t M2_STEP = 6;
 const uint8_t M2_DIR = 7;
 
 //horizontal distance between motors [mm]
-const float MOTOR_DIST = 1100;
+const float MOTOR_DIST = 1370;
 const float MOTOR_DIST_SQ = MOTOR_DIST * MOTOR_DIST;
 
 //length of the cable at position 0 [mm]
@@ -34,7 +34,7 @@ int maxSpeed = 3200;
 float m_x, m_y;
 
 bool movePosition = false;
-float reached_epsilon = 0.01f;
+float reached_epsilon = 0.1f;
 
 //converts machine x to work x
 float toWorkX(float x){
