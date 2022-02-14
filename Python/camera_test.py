@@ -6,6 +6,8 @@ def process_frame(frame):
     crop = 16
     frame_bw = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
+    frame_bw = cv2.GaussianBlur(frame_bw,(21,21),0)
+
     frame_y = int(frame_bw.shape[0] * 0.8 - (crop / 2))
     frame_x = int(frame_bw.shape[1] / 2 - (crop / 2)) + 8
 
@@ -30,7 +32,8 @@ time.sleep(1)
 
 capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-capture.set(cv2.CAP_PROP_EXPOSURE, 40)
+capture.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+capture.set(cv2.CAP_PROP_EXPOSURE, 105)
 
 last_start = time.time()
 
@@ -57,7 +60,7 @@ while True:
 
     cv2.imshow('processed', processed)
     cv2.imshow('frame', frame)
-    
+
     #exit if ESC is pressed
     c = cv2.waitKey(1)
     if c == 27:

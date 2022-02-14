@@ -59,10 +59,25 @@ class Plotter:
         self.gpad_b_pressed = gpad.B == 1
         self.gpad_a_pressed = gpad.A == 1
 
+    #runs a single program
+    def run(self, program, run_time = float('inf')):
+        start_time = time.time()
+
+        _task = task.PolargraphTask(self, program)
+
+        _task.start()
+
+        while(not keyboard.is_pressed('esc') and time.time() - start_time < run_time and _task.is_running()):                
+            time.sleep(0.01)
+
+        _task.stop()
+        self.send_xy(0, 0)
+        print("Program stopped")
+
 
     # run the plotter - by default it will be controlable by the gampad's right joystick
     # the supplied array of programs can be maped to the gamepad buttons x, y, b and a (in that order)
-    def run(self, programs, run_time = float('inf')):
+    def run_gamepad(self, programs, run_time = float('inf')):
         # create the gamepad listener
         gpad = Gamepad()
 

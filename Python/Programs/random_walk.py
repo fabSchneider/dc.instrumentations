@@ -18,6 +18,9 @@ def random_walk(task):
 
 def random_walk_sequence(task):
     print("Starting random walk")
+    time.sleep(5)
+    random.seed(999)
+
     # dir = random.uniform(-math.pi, math.pi)
     dir = random.randint(0, 3) * math.pi * 0.5
 
