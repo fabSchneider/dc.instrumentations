@@ -2,6 +2,10 @@
 
 //#define SEND_RESPONSE
 
+const int CMD_DIR = 0;
+const int CMD_POS = 1;
+const int CMD_FEED = 2;
+
 const uint8_t M1_EN = 2;
 const uint8_t M1_STEP = 3;
 const uint8_t M1_DIR = 4;
@@ -29,6 +33,7 @@ float home_y;
 
 //the motors maximum speed
 int maxSpeed = 3200;
+int speed = maxSpeed;
 
 //machine x, y position
 float m_x, m_y;
@@ -199,8 +204,8 @@ void checkReachedPosition(){
 //updates the motor speeds
 void updateSpeeds()
 {
-  m1.setSpeed(d1 * maxSpeed);
-  m2.setSpeed(d2 * maxSpeed);
+  m1.setSpeed(d1 * speed);
+  m2.setSpeed(d2 * speed);
 }
 
 //returns the length of a 2d vector
@@ -274,28 +279,69 @@ bool processData()
   }
 
   int tp = data.toInt();
+  float tx = 0;
+  float ty = 0;
 
-  //read x
-  data = strtok(NULL, delimiter);
-  if (data == NULL)
+  switch (tp)
   {
-    return false;
+  case CMD_DIR: 
+
+    //read x
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+
+    tx = data.toFloat();
+
+    //read y
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+    ty = data.toFloat();
+    cmd_x = tx;
+    cmd_y = ty;
+    movePosition = false;
+    break;
+  case CMD_POS:
+
+    //read x
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+
+    tx = data.toFloat();
+
+    //read y
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+    ty = data.toFloat();
+    cmd_x = tx;
+    cmd_y = ty;
+    movePosition = true;
+    break;
+  case CMD_FEED:
+    //read feed
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+    int feed = data.toInt();
+    speed = feed;
+    break;
+  
+  default:
+    break;
   }
-
-  float tx = data.toFloat();
-
-  //read y
-  data = strtok(NULL, delimiter);
-  if (data == NULL)
-  {
-    return false;
-  }
-
-  float ty = data.toFloat();
-
-  movePosition = tp == 1;
-  cmd_x = tx;
-  cmd_y = ty;
   return true;
 }
 

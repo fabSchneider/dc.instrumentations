@@ -4,13 +4,16 @@ import random
 
 def random_walk(task):
     print("Starting random walk")
+    random.seed(999)
     dir = random.uniform(-math.pi, math.pi)
     while task._running:
         dir += random.uniform(-math.pi * 0.5, math.pi * 0.5)
         x = math.cos(dir)
         y = math.sin(dir)
         task.plotter.send_xy(x, y)
-        time.sleep(0.5)
+        time.sleep(0.25)
+        task.plotter.set_speed(random.randint(300, 3000))
+        time.sleep(0.25)
 
     # send stop
     task.plotter.send_xy(0, 0)
@@ -18,7 +21,6 @@ def random_walk(task):
 
 def random_walk_sequence(task):
     print("Starting random walk")
-    time.sleep(5)
     random.seed(999)
 
     # dir = random.uniform(-math.pi, math.pi)

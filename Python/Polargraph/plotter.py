@@ -22,9 +22,12 @@ class Plotter:
     # Sends xy command to arduino
     def send_xy(self, x , y):
         self.send("0 {0} {1}\n".format(x, y))
-        
+
     def send_pos(self, x, y):
-           self.send("1 {0} {1}\n".format(x, y))
+        self.send("1 {0} {1}\n".format(x, y))
+            
+    def set_speed(self, speed):
+           self.send("2 {0}\n".format(speed))
 
     def send(self, str):
         self._arduino.write(bytes(str, 'ascii'))
