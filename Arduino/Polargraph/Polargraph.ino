@@ -15,18 +15,18 @@ const uint8_t M2_STEP = 6;
 const uint8_t M2_DIR = 7;
 
 //horizontal distance between motors [mm]
-const float MOTOR_DIST = 1370;
+const float MOTOR_DIST = 2000;
 const float MOTOR_DIST_SQ = MOTOR_DIST * MOTOR_DIST;
 
 //length of the cable at position 0 [mm]
-const float HOME_LEN = 1000;
+const float HOME_LEN = 1500;
 //cable length difference per motor step [mm/step]
 const float LEN_PER_STEP = 0.035f;
 
-const int LIMIT_MIN_X = -450;
-const int LIMIT_MAX_X = 450;
-const int LIMIT_MIN_Y = -700;
-const int LIMIT_MAX_Y = 700;
+const int LIMIT_MIN_X = -800;
+const int LIMIT_MAX_X = 1000;
+const int LIMIT_MIN_Y = -550;
+const int LIMIT_MAX_Y = 800;
 
 float home_x;
 float home_y;
@@ -305,7 +305,7 @@ bool processData()
     cmd_x = tx;
     cmd_y = ty;
     movePosition = false;
-    break;
+    return true;
   case CMD_POS:
 
     //read x
@@ -327,8 +327,9 @@ bool processData()
     cmd_x = tx;
     cmd_y = ty;
     movePosition = true;
-    break;
+    return true;
   case CMD_FEED:
+  {
     //read feed
     data = strtok(NULL, delimiter);
     if (data == NULL)
@@ -337,12 +338,11 @@ bool processData()
     }
     int feed = data.toInt();
     speed = feed;
-    break;
-  
+    return true;
+  } 
   default:
-    break;
+    return false;
   }
-  return true;
 }
 
 //prints the current state to the serial
