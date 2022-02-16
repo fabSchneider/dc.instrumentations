@@ -11,7 +11,7 @@ cap_exposure = 115
 
 def process_frame(frame):
 
-    crop = 4
+    crop = 8
     frame_bw = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     frame_bw = cv2.GaussianBlur(frame_bw,(11,11),0)
@@ -35,8 +35,7 @@ def sigmoid_01(x, s):
     return 1.0 / (1.0 + math.e**(-x*s + s/2))
 
 def map_brightness(_min, _max, b):
-    b = sigmoid_01(b, 20)
-    # delay = (1.0 - val) * 5.0 + 0.03
+    b = sigmoid_01(b, 10)
     return (1.0 - b) * _max + _min
 
 def create_capture():
@@ -55,7 +54,7 @@ def create_capture():
 
 def camera_feed(task):
     print("Starting camera feed")
-
+    random.seed(999)
     capture = create_capture()
 
     # dir = random.uniform(-math.pi, math.pi)
@@ -69,7 +68,7 @@ def camera_feed(task):
             processed, frame, val = process_frame(frame)
             processed =  cv2.resize(processed, (256, 256))
 
-            delay = map_brightness(0.03, 5.0, val)
+            delay = map_brightness(0.06, 6.0, val)
 
             curr_interval = (time.time() - last_start)
             if curr_interval > delay:
@@ -80,15 +79,20 @@ def camera_feed(task):
                 task.plotter.send_xy(x, y)
                 last_start = time.time()
 
+            ui_color = 255
+            if val > 0.7:
+                ui_color = 0
+
             cv2.putText(
                 processed, str(val), (8, 16), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255, 1)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, ui_color, 1)
             cv2.putText(
                 processed, str(delay), (8, 32), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255, 1)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, ui_color, 1)
             cv2.putText(
                 processed, str(curr_interval), (8, 48), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255, 1)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, ui_color, 1)
+            cv2.line(processed, (0,245), (int(255 * (delay/6.0)), 245), ui_color, 5)
             cv2.imshow('frame', frame)
             cv2.imshow('processed', processed)
             cv2.waitKey(1)          

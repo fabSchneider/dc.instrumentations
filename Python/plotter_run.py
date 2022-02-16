@@ -21,7 +21,7 @@ if __name__ == '__main__':
     try:
         arduino = serial.Serial(port, baudrate, timeout = 0.003)
         plotter = Plotter(arduino)
-        plotter.run(random_walk_sequence, run_time = time_utils.hour_to_sec(3))
+        plotter.run(random_walk_sequence, run_time = time_utils.hour_to_sec(8))
     except SerialException as e:
         print(e)
     else:
