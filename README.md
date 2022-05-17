@@ -4,7 +4,7 @@ Project repository for the Instrumentations Studio 2021/22
 
 Design & Computation - University of the Arts, Berlin
 
-![Polargraph01](Media/Polargraph01.JPEG)
+![Polargraph01](Media/Polargraph01.png)
 ![Polargraph02](Media/Polargraph02.JPEG)
 ![Polargraph03](Media/Polargraph03.JPEG)
 
