@@ -35,7 +35,6 @@ Design & Computation - University of the Arts, Berlin
 3. Start the python script to control the polargraph (start the scripts from the root python directory and not the subfolder the script is in)
 
     >On Linux:
-
     >You might need to give permission to access the port the arduino is using by running 
     >use the name of the port the arduino board is plugged into (e.g. /dev/ttyACM0)
     >
