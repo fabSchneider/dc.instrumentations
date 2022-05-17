@@ -6,8 +6,8 @@ class Gamepad(object):
     MAX_TRIG_VAL = math.pow(2, 8)
     MAX_JOY_VAL = math.pow(2, 15)
 
-    JOY_DEADZONE = 0.2
-    TRIG_DEADZONE = 0.2
+    JOY_DEADZONE = 0.3
+    TRIG_DEADZONE = 0.3
 
     def __init__(self):
         self.LeftJoystickY = 0

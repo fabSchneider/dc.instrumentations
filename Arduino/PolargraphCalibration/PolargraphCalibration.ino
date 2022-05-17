@@ -1,5 +1,5 @@
 // This routine can be used to measure the cable displacement in mm per step
-// On start the motor 1 will move for 10000 steps
+// On start motor 1 will move for 10000 steps
 // The resulting length difference of the belt divided by the steps gives us the mm per step ratio
 
 const uint8_t M1_EN = 2;

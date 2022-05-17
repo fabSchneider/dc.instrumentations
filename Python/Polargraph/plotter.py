@@ -22,9 +22,12 @@ class Plotter:
     # Sends xy command to arduino
     def send_xy(self, x , y):
         self.send("0 {0} {1}\n".format(x, y))
-        
+
     def send_pos(self, x, y):
-           self.send("1 {0} {1}\n".format(x, y))
+        self.send("1 {0} {1}\n".format(x, y))
+            
+    def set_speed(self, speed):
+           self.send("2 {0}\n".format(speed))
 
     def send(self, str):
         self._arduino.write(bytes(str, 'ascii'))
@@ -59,10 +62,25 @@ class Plotter:
         self.gpad_b_pressed = gpad.B == 1
         self.gpad_a_pressed = gpad.A == 1
 
+    #runs a single program
+    def run(self, program, run_time = float('inf')):
+        start_time = time.time()
+
+        _task = task.PolargraphTask(self, program)
+
+        _task.start()
+
+        while(not keyboard.is_pressed('esc') and time.time() - start_time < run_time and _task.is_running()):                
+            time.sleep(0.01)
+
+        _task.stop()
+        self.send_xy(0, 0)
+        print("Program stopped")
+
 
     # run the plotter - by default it will be controlable by the gampad's right joystick
     # the supplied array of programs can be maped to the gamepad buttons x, y, b and a (in that order)
-    def run(self, programs):
+    def run_gamepad(self, programs, run_time = float('inf')):
         # create the gamepad listener
         gpad = Gamepad()
 
@@ -77,7 +95,9 @@ class Plotter:
         currTask = gpad_task
         tasks[currTask].start()
 
-        while(not keyboard.is_pressed('esc')):
+        start_time = time.time()
+
+        while(not keyboard.is_pressed('esc') and time.time() - start_time < run_time):
             self.read_gpad(gpad)
 
             if len(tasks) > 1 and self.gpad_x_down:

@@ -2,6 +2,10 @@
 
 //#define SEND_RESPONSE
 
+const int CMD_DIR = 0;
+const int CMD_POS = 1;
+const int CMD_FEED = 2;
+
 const uint8_t M1_EN = 2;
 const uint8_t M1_STEP = 3;
 const uint8_t M1_DIR = 4;
@@ -20,21 +24,22 @@ const float HOME_LEN = 1500;
 const float LEN_PER_STEP = 0.035f;
 
 const int LIMIT_MIN_X = -800;
-const int LIMIT_MAX_X = 800;
-const int LIMIT_MIN_Y = -800;
-const int LIMIT_MAX_Y = 1000;
+const int LIMIT_MAX_X = 1000;
+const int LIMIT_MIN_Y = -550;
+const int LIMIT_MAX_Y = 800;
 
 float home_x;
 float home_y;
 
 //the motors maximum speed
 int maxSpeed = 3200;
+int speed = maxSpeed;
 
 //machine x, y position
 float m_x, m_y;
 
 bool movePosition = false;
-float reached_epsilon = 0.01f;
+float reached_epsilon = 0.1f;
 
 //converts machine x to work x
 float toWorkX(float x){
@@ -199,8 +204,8 @@ void checkReachedPosition(){
 //updates the motor speeds
 void updateSpeeds()
 {
-  m1.setSpeed(d1 * maxSpeed);
-  m2.setSpeed(d2 * maxSpeed);
+  m1.setSpeed(d1 * speed);
+  m2.setSpeed(d2 * speed);
 }
 
 //returns the length of a 2d vector
@@ -274,29 +279,70 @@ bool processData()
   }
 
   int tp = data.toInt();
+  float tx = 0;
+  float ty = 0;
 
-  //read x
-  data = strtok(NULL, delimiter);
-  if (data == NULL)
+  switch (tp)
   {
+  case CMD_DIR: 
+
+    //read x
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+
+    tx = data.toFloat();
+
+    //read y
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+    ty = data.toFloat();
+    cmd_x = tx;
+    cmd_y = ty;
+    movePosition = false;
+    return true;
+  case CMD_POS:
+
+    //read x
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+
+    tx = data.toFloat();
+
+    //read y
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+    ty = data.toFloat();
+    cmd_x = tx;
+    cmd_y = ty;
+    movePosition = true;
+    return true;
+  case CMD_FEED:
+  {
+    //read feed
+    data = strtok(NULL, delimiter);
+    if (data == NULL)
+    {
+      return false;
+    }
+    int feed = data.toInt();
+    speed = feed;
+    return true;
+  } 
+  default:
     return false;
   }
-
-  float tx = data.toFloat();
-
-  //read y
-  data = strtok(NULL, delimiter);
-  if (data == NULL)
-  {
-    return false;
-  }
-
-  float ty = data.toFloat();
-
-  movePosition = tp == 1;
-  cmd_x = tx;
-  cmd_y = ty;
-  return true;
 }
 
 //prints the current state to the serial

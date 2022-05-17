@@ -13,7 +13,8 @@ def gamepad_control(task):
     # start the send loop
     while task._running and  gpad.is_running():
         x = gpad.RightJoystickX
-        y = gpad.RightJoystickY
+        # on linux the joystick y axis is inverted
+        y = -gpad.RightJoystickY
         
         x, y = util.clamp_to_unit(x, y)
         
